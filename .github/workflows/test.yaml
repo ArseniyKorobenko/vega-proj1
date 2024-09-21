@@ -5,5 +5,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: g++ main.cpp my_add.cpp -o main
-      - run: ./main 4 6
+      - run: sudo apt update && sudo apt install cmake
+      - run: mkdir build && cmake -B build -S . && cmake --build build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binaries
+          path: |
+            build/main
+            build/tests
+
+  tests:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: binaries
+      - run: chmod +x tests && ./tests
+
+  run:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: binaries
+      - run: chmod +x main && ./main 123 456
